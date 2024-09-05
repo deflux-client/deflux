@@ -1,0 +1,28 @@
+#include "tcp_server.hpp"
+
+#include <asio/redirect_error.hpp>
+
+namespace deflux::net {
+
+void tcp_server::start_listening() {
+    co_spawn(m_acceptor.get_executor(), handle_new_connections(), asio::detached);
+    m_executor.run();
+}
+
+asio::awaitable<void> tcp_server::handle_new_connections() {
+    asio::error_code ec;
+    tcp_connection::message_callback_t callback = [this](std::vector<uint8_t> m, size_t s, uint32_t id) {
+        on_message_received(std::move(m), s, id);
+    };
+
+    while (true) {
+        asio::ip::tcp::socket sock = co_await m_acceptor.async_accept(m_acceptor.get_executor(), redirect_error(asio::use_awaitable, ec));
+
+        if (ec)
+            throw std::runtime_error(std::format("m_acceptor: {}", ec.message()));
+
+        m_connections.push_back(tcp_connection::make_connection(std::move(sock), 1, callback));
+    }
+}
+
+}
