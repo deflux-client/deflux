@@ -15,7 +15,7 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
 public:
     using id_t = uint32_t;
-    using message_callback_t = std::function<void(std::vector<uint8_t>, size_t, id_t)>;
+    using message_callback_t = std::function<void(std::vector<uint8_t>, id_t)>;
     using close_callback_t = std::function<void(id_t)>;
 
     tcp_connection() = delete;
