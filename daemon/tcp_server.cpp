@@ -32,7 +32,9 @@ asio::awaitable<void> tcp_server::handle_new_connections() {
         }
 
         spdlog::info("new incoming connection from {}", sock.remote_endpoint().address().to_string());
-        m_connections.push_back(tcp_connection::make_connection(std::move(sock), on_message, on_close));
+        const auto connection = tcp_connection::make_connection(std::move(sock), on_message, on_close);
+
+        m_connections.insert({ connection->id(), connection });
     }
 }
 
