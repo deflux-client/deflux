@@ -2,9 +2,26 @@
 
 #include <asio/read.hpp>
 #include <asio/redirect_error.hpp>
+#include <asio/write.hpp>
 #include <spdlog/spdlog.h>
 
 namespace deflux::net {
+
+asio::awaitable<void> tcp_connection::async_write(std::vector<uint8_t> message) {
+    asio::error_code ec;
+    uint16_t message_size = htons(message.size());
+    co_await asio::async_write(m_socket, std::array{ asio::buffer(&message_size, sizeof(message_size)), asio::buffer(message, message.size()) },
+        redirect_error(asio::use_awaitable, ec));
+
+    if (ec) {
+        handle_socket_error(ec);
+        co_return;
+    }
+}
+
+void tcp_connection::send(std::vector<uint8_t>& message) {
+    co_spawn(m_socket.get_executor(), async_write(std::move(message)), asio::detached);
+}
 
 asio::ip::tcp::endpoint tcp_connection::remote_endpoint() const {
     return m_socket.remote_endpoint();
