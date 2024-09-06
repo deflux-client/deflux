@@ -11,18 +11,15 @@ public:
     daemon() : tcp_server(asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 2347)) {}
 
     void on_message_received(std::vector<uint8_t> raw_message, deflux::net::tcp_connection::id_t id) override {
-        for (const auto& c : raw_message) {
-            printf("%c", c);
-        }
+        const std::string message{ raw_message.begin(), raw_message.end() };
+        spdlog::debug("connection {}: {}", id, message);
 
-        printf("\n");
-
-        fflush(stdout);
+        const auto connection = m_connections[id];
+        connection->send(raw_message);
     }
 
     void on_connection_close(deflux::net::tcp_connection::id_t id) override {
-        printf("connection %d closed\n", id);
-        fflush(stdout);
+        spdlog::info("connection {} closed\n", id);
     }
 };
 
