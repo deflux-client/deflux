@@ -33,7 +33,6 @@ void tcp_connection::close() {
 
     asio::error_code ec;
     spdlog::debug("closing connection to {} (connection id {})", remote_endpoint().address().to_string(), m_id);
-
     m_socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
 
     if (ec)
@@ -57,13 +56,12 @@ void tcp_connection::handle_socket_error(const asio::error_code& ec) {
 
 asio::awaitable<void> tcp_connection::async_read() {
     while (true) {
-        // each message is prepended by it's length, encoded as a 16-bit number
-        std::array<uint8_t, 2> message_size_buf{};
+        uint16_t incoming_message_size;
         std::vector<uint8_t> message_buf{};
         asio::error_code ec;
 
-        size_t bytes_read = co_await asio::async_read(m_socket, asio::buffer(message_size_buf),
-                                                      asio::transfer_exactly(message_size_buf.size()),
+        size_t bytes_read = co_await asio::async_read(m_socket, asio::buffer(&incoming_message_size, sizeof(incoming_message_size)),
+                                                      asio::transfer_exactly(sizeof(incoming_message_size)),
                                                       redirect_error(asio::use_awaitable, ec));
 
         if (ec) {
@@ -71,9 +69,9 @@ asio::awaitable<void> tcp_connection::async_read() {
             co_return;
         }
 
-        assert(bytes_read == message_size_buf.size());
+        assert(bytes_read == sizeof(incoming_message_size));
 
-        const uint16_t incoming_message_size = ntohs(*reinterpret_cast<uint16_t*>(message_size_buf.data()));
+        incoming_message_size = ntohs(incoming_message_size);
         message_buf.resize(incoming_message_size);
 
         bytes_read = co_await asio::async_read(m_socket, asio::buffer(message_buf, incoming_message_size),
