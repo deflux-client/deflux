@@ -1,5 +1,8 @@
 #include <coroutine>
+
 #include <asio.hpp>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include "tcp_server.hpp"
 
@@ -27,7 +30,9 @@ public:
 
 int main() {
     daemon d{};
+
     d.start_listening();
+    spdlog::shutdown();
 
     return EXIT_SUCCESS;
 }

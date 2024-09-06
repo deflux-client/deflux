@@ -1,6 +1,7 @@
 #include "tcp_server.hpp"
 
 #include <asio/redirect_error.hpp>
+#include <spdlog/spdlog.h>
 
 namespace deflux::net {
 
@@ -25,9 +26,12 @@ asio::awaitable<void> tcp_server::handle_new_connections() {
     while (true) {
         asio::ip::tcp::socket sock = co_await m_acceptor.async_accept(m_acceptor.get_executor(), redirect_error(asio::use_awaitable, ec));
 
-        if (ec)
-            throw std::runtime_error(std::format("m_acceptor: {}", ec.message()));
+        if (ec) {
+            spdlog::error("handle_new_connections(): error while trying to accept new connection: {}", ec.message());
+            co_return; // TODO: better handling of stuff
+        }
 
+        spdlog::info("new incoming connection from {}", sock.remote_endpoint().address().to_string());
         m_connections.push_back(tcp_connection::make_connection(std::move(sock), on_message, on_close));
     }
 }

@@ -10,5 +10,7 @@ add_executable(defluxd
         tcp_connection.hpp
         tcp_connection.cpp)
 
+target_link_libraries(defluxd PRIVATE spdlog::spdlog)
+
 target_include_directories(defluxd PRIVATE
         ../third-party/asio/asio/include)

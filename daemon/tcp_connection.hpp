@@ -32,6 +32,7 @@ public:
     void close();
     [[nodiscard]] bool is_open() const;
     [[nodiscard]] id_t id() const;
+    [[nodiscard]] asio::ip::tcp::endpoint remote_endpoint() const;
 
 private:
     struct private_t{};

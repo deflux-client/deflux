@@ -1,16 +1,27 @@
 #include "tcp_connection.hpp"
 
-#include <iostream>
 #include <asio/read.hpp>
 #include <asio/redirect_error.hpp>
+#include <spdlog/spdlog.h>
 
 namespace deflux::net {
+
+asio::ip::tcp::endpoint tcp_connection::remote_endpoint() const {
+    return m_socket.remote_endpoint();
+}
 
 void tcp_connection::close() {
     if (!m_socket.is_open())
         return;
 
-    m_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
+    asio::error_code ec;
+    spdlog::debug("closing connection to {} (connection id {})", remote_endpoint().address().to_string(), m_id);
+
+    m_socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+
+    if (ec)
+        spdlog::warn("close(): could not correctly close socket: {}", ec.message()); // TODO: better handling of stuff
+
     m_on_connection_close(m_id);
 }
 
@@ -23,7 +34,7 @@ uint32_t tcp_connection::id() const {
 }
 
 void tcp_connection::handle_socket_error(const asio::error_code& ec) {
-    std::cout << std::format("Error during socket operation: {}\n", ec.message());
+    spdlog::error("error during operation on socket: {}", ec.message());
     close();
 }
 
