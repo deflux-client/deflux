@@ -9,6 +9,12 @@ void tcp_server::start_listening() {
     m_executor.run();
 }
 
+void tcp_server::stop_listening() {
+    asio::post(m_executor, [this] {
+        m_acceptor.close();
+    });
+}
+
 asio::awaitable<void> tcp_server::handle_new_connections() {
     asio::error_code ec;
     tcp_connection::close_callback_t on_close = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
