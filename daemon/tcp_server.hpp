@@ -19,6 +19,7 @@ public:
 
     void start_listening();
     virtual void on_message_received(std::vector<uint8_t> raw_message, size_t size, uint32_t id) = 0;
+    virtual void on_connection_close(tcp_connection::id_t id) = 0;
 };
 
 }

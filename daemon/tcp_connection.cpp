@@ -6,11 +6,12 @@
 
 namespace deflux::net {
 
-void tcp_connection::shutdown(const asio::ip::tcp::socket::shutdown_type& direction) {
+void tcp_connection::close() {
     if (!m_socket.is_open())
         return;
 
-    m_socket.shutdown(direction);
+    m_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
+    m_on_connection_close(m_id);
 }
 
 bool tcp_connection::is_open() const {
@@ -23,7 +24,7 @@ uint32_t tcp_connection::id() const {
 
 void tcp_connection::handle_socket_error(const asio::error_code& ec) {
     std::cout << std::format("Error during socket operation: {}\n", ec.message());
-    shutdown(asio::ip::tcp::socket::shutdown_both);
+    close();
 }
 
 asio::awaitable<void> tcp_connection::async_read() {
@@ -60,9 +61,13 @@ asio::awaitable<void> tcp_connection::async_read() {
     }
 }
 
-std::shared_ptr<tcp_connection> tcp_connection::make_connection(asio::ip::tcp::socket socket, uint32_t id, const message_callback_t& callback) {
-    return std::make_shared<tcp_connection>(std::move(socket), id, callback, private_t{});
-}
+std::shared_ptr<tcp_connection> tcp_connection::make_connection(asio::ip::tcp::socket socket,
+                                                                const message_callback_t& message_callback,
+                                                                const close_callback_t& close_callback)
+{
+    static id_t id_counter = 0;
 
+    return std::make_shared<tcp_connection>(std::move(socket), id_counter++, message_callback, close_callback, private_t{});
+}
 
 }

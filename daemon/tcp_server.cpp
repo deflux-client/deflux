@@ -11,8 +11,9 @@ void tcp_server::start_listening() {
 
 asio::awaitable<void> tcp_server::handle_new_connections() {
     asio::error_code ec;
-    tcp_connection::message_callback_t callback = [this](std::vector<uint8_t> m, size_t s, uint32_t id) {
-        on_message_received(std::move(m), s, id);
+    tcp_connection::close_callback_t on_close = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
+    tcp_connection::message_callback_t on_message = [this](std::vector<uint8_t> m, size_t s, tcp_connection::id_t id) {
+        this->on_message_received(std::move(m), s, id);
     };
 
     while (true) {
@@ -21,7 +22,7 @@ asio::awaitable<void> tcp_server::handle_new_connections() {
         if (ec)
             throw std::runtime_error(std::format("m_acceptor: {}", ec.message()));
 
-        m_connections.push_back(tcp_connection::make_connection(std::move(sock), 1, callback));
+        m_connections.push_back(tcp_connection::make_connection(std::move(sock), on_message, on_close));
     }
 }
 

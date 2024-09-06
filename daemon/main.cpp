@@ -18,6 +18,11 @@ public:
 
         fflush(stdout);
     }
+
+    void on_connection_close(deflux::net::tcp_connection::id_t id) override {
+        printf("connection %d closed\n", id);
+        fflush(stdout);
+    }
 };
 
 int main() {
