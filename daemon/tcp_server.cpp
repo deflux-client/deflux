@@ -6,12 +6,13 @@
 
 namespace deflux::net {
 
-void tcp_server::start_listening() {
+void tcp_server::run() {
     co_spawn(m_acceptor.get_executor(), handle_new_connections(), asio::detached);
+    co_spawn(m_set.get_executor(), handle_signals(), asio::detached);
     m_pool.run();
 }
 
-void tcp_server::stop_listening() {
+void tcp_server::stop() {
     post(m_acceptor.get_executor(), [this] {
         m_acceptor.close();
         m_pool.stop();
@@ -20,8 +21,8 @@ void tcp_server::stop_listening() {
 
 asio::awaitable<void> tcp_server::handle_new_connections() {
     asio::error_code ec;
-    tcp_connection::close_callback_t on_close = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
-    tcp_connection::message_callback_t on_message = [this](std::vector<uint8_t> m, std::shared_ptr<tcp_connection> connection) {
+    const tcp_connection::close_callback_t on_close = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
+    const tcp_connection::message_callback_t on_message = [this](std::vector<uint8_t> m, std::shared_ptr<tcp_connection> connection) {
         this->on_message_received(std::move(m), std::move(connection));
     };
 
@@ -39,6 +40,12 @@ asio::awaitable<void> tcp_server::handle_new_connections() {
 
         m_connections.insert({ connection->id(), connection });
     }
+}
+
+asio::awaitable<void> tcp_server::handle_signals() {
+    asio::error_code unused{};
+    co_await m_set.async_wait(redirect_error(asio::use_awaitable, unused));
+    stop();
 }
 
 }
