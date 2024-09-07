@@ -25,7 +25,7 @@ public:
 int main() {
     daemon d{};
 
-    d.start_listening();
+    d.run();
     spdlog::shutdown();
 
     return EXIT_SUCCESS;
