@@ -8,12 +8,13 @@ namespace deflux::net {
 
 void tcp_server::start_listening() {
     co_spawn(m_acceptor.get_executor(), handle_new_connections(), asio::detached);
-    m_executor.run();
+    m_pool.run();
 }
 
 void tcp_server::stop_listening() {
-    asio::post(m_executor, [this] {
+    post(m_acceptor.get_executor(), [this] {
         m_acceptor.close();
+        m_pool.stop();
     });
 }
 
@@ -25,7 +26,8 @@ asio::awaitable<void> tcp_server::handle_new_connections() {
     };
 
     while (true) {
-        asio::ip::tcp::socket sock = co_await m_acceptor.async_accept(m_acceptor.get_executor(), redirect_error(asio::use_awaitable, ec));
+        asio::ip::tcp::socket sock = co_await m_acceptor.async_accept(m_pool.get_executor(),
+            redirect_error(asio::use_awaitable, ec));
 
         if (ec) {
             spdlog::error("handle_new_connections(): error while trying to accept new connection: {}", ec.message());

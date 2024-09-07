@@ -3,11 +3,14 @@
 
 #include <asio/ip/tcp.hpp>
 
+#include "io_pool.hpp"
 #include "tcp_connection.hpp"
 
 namespace deflux::net {
 /**
  * Abstract class implementing an asynchronous TCP server.
+ *
+ * @note does not handle signals like SIGTERM/SIGINT/SIGQUIT
  */
 class tcp_server {
 public:
@@ -15,7 +18,7 @@ public:
      * Creates a `tcp_server` that listens for connections on `endpoint`
      * @param endpoint listening endpoint
      */
-    explicit tcp_server(const asio::ip::tcp::endpoint& endpoint) : m_acceptor(m_executor, endpoint) {  }
+    explicit tcp_server(const asio::ip::tcp::endpoint& endpoint) : m_acceptor(m_pool.get_executor(), endpoint) {  }
     virtual ~tcp_server() = default;
 
     void start_listening();
@@ -38,7 +41,7 @@ public:
 
 private:
     std::unordered_map<tcp_connection::id_t, std::shared_ptr<tcp_connection>> m_connections{};
-    asio::io_context m_executor;
+    io_pool m_pool{};
     asio::ip::tcp::acceptor m_acceptor;
 
     asio::awaitable<void> handle_new_connections();
