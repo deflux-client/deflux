@@ -85,7 +85,7 @@ asio::awaitable<void> tcp_connection::async_read() {
         assert(bytes_read == incoming_message_size);
         assert(message_buf.size() == incoming_message_size);
 
-        m_on_message_received(std::move(message_buf), m_id);
+        m_on_message_received(std::move(message_buf), shared_from_this());
     }
 }
 

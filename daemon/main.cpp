@@ -10,11 +10,10 @@ class daemon : public deflux::net::tcp_server {
 public:
     daemon() : tcp_server(asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 2347)) {}
 
-    void on_message_received(std::vector<uint8_t> raw_message, deflux::net::tcp_connection::id_t id) override {
+    void on_message_received(std::vector<uint8_t> raw_message, std::shared_ptr<deflux::net::tcp_connection> connection) override {
         const std::string message{ raw_message.begin(), raw_message.end() };
-        spdlog::debug("connection {}: {}", id, message);
+        spdlog::debug("connection {}: {}", connection->id(), message);
 
-        const auto connection = m_connections[id];
         connection->send(raw_message);
     }
 

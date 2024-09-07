@@ -17,10 +17,14 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
 public:
     using id_t = uint32_t;
-    using message_callback_t = std::function<void(std::vector<uint8_t>, id_t)>;
+    using message_callback_t = std::function<void(std::vector<uint8_t>, std::shared_ptr<tcp_connection>)>;
     using close_callback_t = std::function<void(id_t)>;
 
     tcp_connection() = delete;
+
+    /**
+     * Internal constructor. Use the static funcion `make_connection` instead.
+     */
     tcp_connection(asio::ip::tcp::socket _s, id_t _id, message_callback_t _m, close_callback_t _c, private_t p)
         : m_socket(std::move(_s)), m_id(_id), m_on_message_received(std::move(_m)), m_on_connection_close(std::move(_c))
     {
@@ -38,6 +42,7 @@ public:
     [[nodiscard]] asio::ip::tcp::endpoint remote_endpoint() const;
 
 private:
+    // used to force usage of `make_connection`
     struct private_t{};
 
     asio::ip::tcp::socket m_socket;

@@ -1,6 +1,7 @@
 #include "tcp_server.hpp"
 
 #include <asio/redirect_error.hpp>
+#include <utility>
 #include <spdlog/spdlog.h>
 
 namespace deflux::net {
@@ -19,8 +20,8 @@ void tcp_server::stop_listening() {
 asio::awaitable<void> tcp_server::handle_new_connections() {
     asio::error_code ec;
     tcp_connection::close_callback_t on_close = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
-    tcp_connection::message_callback_t on_message = [this](std::vector<uint8_t> m, tcp_connection::id_t id) {
-        this->on_message_received(std::move(m), id);
+    tcp_connection::message_callback_t on_message = [this](std::vector<uint8_t> m, std::shared_ptr<tcp_connection> connection) {
+        this->on_message_received(std::move(m), std::move(connection));
     };
 
     while (true) {
