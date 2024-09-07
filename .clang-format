@@ -1,0 +1,11 @@
+BasedOnStyle: WebKit
+AlignAfterOpenBracket: DontAlign
+AllowShortFunctionsOnASingleLine: Empty
+BreakConstructorInitializers: BeforeColon
+PackConstructorInitializers: Never
+EmptyLineBeforeAccessModifier: LogicalBlock
+PointerAlignment: Left
+ReferenceAlignment: Left
+ReflowComments: true
+SpaceBeforeCpp11BracedList: false
+Standard: c++20

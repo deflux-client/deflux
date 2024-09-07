@@ -1,25 +1,28 @@
 #include "tcp_server.hpp"
 
 #include <asio/redirect_error.hpp>
-#include <utility>
 #include <spdlog/spdlog.h>
+#include <utility>
 
 namespace deflux::net {
 
-void tcp_server::run() {
+void tcp_server::run()
+{
     co_spawn(m_acceptor.get_executor(), handle_new_connections(), asio::detached);
     handle_signals();
     m_pool.run();
 }
 
-void tcp_server::stop() {
+void tcp_server::stop()
+{
     post(m_acceptor.get_executor(), [this] {
         m_acceptor.close();
         m_pool.stop();
     });
 }
 
-asio::awaitable<void> tcp_server::handle_new_connections() {
+asio::awaitable<void> tcp_server::handle_new_connections()
+{
     asio::error_code ec;
     const tcp_connection::close_callback_t on_close = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
     const tcp_connection::message_callback_t on_message = [this](std::vector<uint8_t> m, std::shared_ptr<tcp_connection> connection) {
@@ -42,7 +45,8 @@ asio::awaitable<void> tcp_server::handle_new_connections() {
     }
 }
 
-void tcp_server::handle_signals() {
+void tcp_server::handle_signals()
+{
     m_set.async_wait([this](const asio::error_code& /* ec */, int /* signal */) {
         this->stop();
     });

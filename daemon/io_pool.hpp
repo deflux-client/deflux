@@ -1,10 +1,10 @@
 #ifndef IO_POOL_HPP
 #define IO_POOL_HPP
 
+#include <asio/io_context.hpp>
 #include <stdexcept>
 #include <thread>
 #include <vector>
-#include <asio/io_context.hpp>
 
 namespace deflux {
 
@@ -21,7 +21,8 @@ public:
      * Creates an `io_pool` with a default size of std::thread::hardware_concurrency, or 1,
      * if hardware concurrency cannot be determined.
      */
-    io_pool() {
+    io_pool()
+    {
         instantiate_executors();
     }
 
@@ -31,7 +32,9 @@ public:
      * @param size non-zero size of the pool
      * @throws std::invalid_argument if size is 0
      */
-    explicit io_pool(const size_t& size) : m_pool_size(size) {
+    explicit io_pool(const size_t& size)
+        : m_pool_size(size)
+    {
         if (size == 0)
             throw std::invalid_argument("io_pool size cannot be 0");
 
@@ -70,4 +73,4 @@ private:
 
 }
 
-#endif //IO_POOL_HPP
+#endif // IO_POOL_HPP

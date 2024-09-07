@@ -17,7 +17,9 @@ public:
      * Creates a `tcp_server` that listens for connections on `endpoint`
      * @param endpoint listening endpoint
      */
-    explicit tcp_server(const asio::ip::tcp::endpoint& endpoint) : m_acceptor(m_pool.get_executor(), endpoint) {
+    explicit tcp_server(const asio::ip::tcp::endpoint& endpoint)
+        : m_acceptor(m_pool.get_executor(), endpoint)
+    {
         m_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
         m_set.add(SIGTERM);
         m_set.add(SIGINT);
@@ -57,4 +59,4 @@ private:
 
 }
 
-#endif //TCP_SERVER_HPP
+#endif // TCP_SERVER_HPP
