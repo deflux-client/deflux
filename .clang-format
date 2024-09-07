@@ -2,8 +2,9 @@ BasedOnStyle: WebKit
 AlignAfterOpenBracket: DontAlign
 AllowShortFunctionsOnASingleLine: Empty
 BreakConstructorInitializers: BeforeColon
-PackConstructorInitializers: Never
+ColumnLimit: 100
 EmptyLineBeforeAccessModifier: LogicalBlock
+PackConstructorInitializers: Never
 PointerAlignment: Left
 ReferenceAlignment: Left
 ReflowComments: true
