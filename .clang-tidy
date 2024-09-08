@@ -152,7 +152,7 @@ CheckOptions:
     value: "_t"
   - key: readability-identifier-naming.TypeAliasCase
     value: lower_case
-  - key: readability-identifier-naming.MemberSuffix
+  - key: readability-identifier-naming.MemberPrefix
     value: "m_"
   - key: readability-identifier-naming.MemberCasing
     value: lower_case
