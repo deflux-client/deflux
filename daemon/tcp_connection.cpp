@@ -7,11 +7,12 @@
 
 namespace deflux::net {
 
-asio::awaitable<void> tcp_connection::async_write(std::vector<uint8_t> message)
+asio::awaitable<void> tcp_connection::async_write(std::vector<uint8_t> message) // NOLINT(*-unnecessary-value-param)
 {
     asio::error_code ec;
     uint16_t message_size = htons(message.size());
-    co_await asio::async_write(m_socket, std::array{ asio::buffer(&message_size, sizeof(message_size)), asio::buffer(message, message.size()) },
+    co_await asio::async_write(m_socket,
+        std::array{ asio::buffer(&message_size, sizeof(message_size)), asio::buffer(message, message.size()) },
         redirect_error(asio::use_awaitable, ec));
 
     if (ec) {
@@ -37,7 +38,7 @@ void tcp_connection::close()
 
     asio::error_code ec;
     spdlog::debug("closing connection to {} (connection id {})", remote_endpoint().address().to_string(), m_id);
-    m_socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    m_socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec); // NOLINT(*-unused-return-value) ???
 
     if (ec)
         spdlog::warn("close(): could not correctly close socket: {}", ec.message()); // TODO: better handling of stuff
@@ -68,9 +69,9 @@ asio::awaitable<void> tcp_connection::async_read()
         std::vector<uint8_t> message_buf{};
         asio::error_code ec;
 
-        size_t bytes_read = co_await asio::async_read(m_socket, asio::buffer(&incoming_message_size, sizeof(incoming_message_size)),
-            asio::transfer_exactly(sizeof(incoming_message_size)),
-            redirect_error(asio::use_awaitable, ec));
+        size_t bytes_read
+            = co_await asio::async_read(m_socket, asio::buffer(&incoming_message_size, sizeof(incoming_message_size)),
+                asio::transfer_exactly(sizeof(incoming_message_size)), redirect_error(asio::use_awaitable, ec));
 
         if (ec) {
             handle_socket_error(ec);
@@ -82,8 +83,8 @@ asio::awaitable<void> tcp_connection::async_read()
         incoming_message_size = ntohs(incoming_message_size);
         message_buf.resize(incoming_message_size);
 
-        bytes_read = co_await asio::async_read(m_socket, asio::buffer(message_buf, incoming_message_size),
-            redirect_error(asio::use_awaitable, ec));
+        bytes_read = co_await asio::async_read(
+            m_socket, asio::buffer(message_buf, incoming_message_size), redirect_error(asio::use_awaitable, ec));
 
         if (ec) {
             handle_socket_error(ec);
@@ -97,13 +98,13 @@ asio::awaitable<void> tcp_connection::async_read()
     }
 }
 
-std::shared_ptr<tcp_connection> tcp_connection::make_connection(asio::ip::tcp::socket socket,
-    const message_callback_t& message_callback,
-    const close_callback_t& close_callback)
+std::shared_ptr<tcp_connection> tcp_connection::make_connection(
+    asio::ip::tcp::socket socket, const message_callback_t& message_callback, const close_callback_t& close_callback)
 {
     static id_t id_counter = 0;
 
-    return std::make_shared<tcp_connection>(std::move(socket), id_counter++, message_callback, close_callback, private_t{});
+    return std::make_shared<tcp_connection>(
+        std::move(socket), id_counter++, message_callback, close_callback, private_t{});
 }
 
 }

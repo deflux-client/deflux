@@ -2,7 +2,7 @@ BasedOnStyle: WebKit
 AlignAfterOpenBracket: DontAlign
 AllowShortFunctionsOnASingleLine: Empty
 BreakConstructorInitializers: BeforeColon
-ColumnLimit: 100
+ColumnLimit: 120
 EmptyLineBeforeAccessModifier: LogicalBlock
 PackConstructorInitializers: Never
 PointerAlignment: Left

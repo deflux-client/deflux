@@ -20,10 +20,9 @@ void io_pool::run() const
 
     run_executor(*m_executors.back());
 
-    for (auto& thread : execution_threads) {
+    for (auto& thread : execution_threads)
         if (thread.joinable())
             thread.join();
-    }
 }
 
 void io_pool::stop() const

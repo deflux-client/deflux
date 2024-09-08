@@ -24,14 +24,17 @@ void tcp_server::stop()
 asio::awaitable<void> tcp_server::handle_new_connections()
 {
     asio::error_code ec;
-    const tcp_connection::close_callback_t on_close = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
-    const tcp_connection::message_callback_t on_message = [this](std::vector<uint8_t> m, std::shared_ptr<tcp_connection> connection) {
-        this->on_message_received(std::move(m), std::move(connection));
-    };
+    const tcp_connection::close_callback_t on_close
+        = [this](tcp_connection::id_t id) { this->on_connection_close(id); };
+
+    const tcp_connection::message_callback_t on_message
+        = [this](std::vector<uint8_t> m, std::shared_ptr<tcp_connection> connection) {
+              this->on_message_received(std::move(m), std::move(connection));
+          };
 
     while (true) {
-        asio::ip::tcp::socket sock = co_await m_acceptor.async_accept(m_pool.get_executor(),
-            redirect_error(asio::use_awaitable, ec));
+        asio::ip::tcp::socket sock
+            = co_await m_acceptor.async_accept(m_pool.get_executor(), redirect_error(asio::use_awaitable, ec));
 
         if (ec) {
             spdlog::error("handle_new_connections(): error while trying to accept new connection: {}", ec.message());
@@ -47,9 +50,7 @@ asio::awaitable<void> tcp_server::handle_new_connections()
 
 void tcp_server::handle_signals()
 {
-    m_set.async_wait([this](const asio::error_code& /* ec */, int /* signal */) {
-        this->stop();
-    });
+    m_set.async_wait([this](const asio::error_code& /* ec */, int /* signal */) { this->stop(); });
 }
 
 }
