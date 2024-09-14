@@ -24,7 +24,7 @@ public:
     /**
      * Internal constructor. Use the static funcion `make_connection` instead.
      */
-    tcp_connection(asio::ip::tcp::socket _s, id_t _id, message_callback_t _m, close_callback_t _c, private_t p)
+    tcp_connection(asio::ip::tcp::socket _s, id_t _id, message_callback_t _m, close_callback_t _c, private_t /*p*/)
         : m_socket(std::move(_s)),
           m_id(_id),
           m_on_message_received(std::move(_m)),
@@ -34,8 +34,7 @@ public:
     }
 
     static std::shared_ptr<tcp_connection> make_connection(asio::ip::tcp::socket socket,
-        const message_callback_t& message_callback,
-        const close_callback_t& close_callback);
+        const message_callback_t& message_callback, const close_callback_t& close_callback);
 
     void close();
     void send(std::vector<uint8_t>& message);
