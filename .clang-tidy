@@ -13,6 +13,7 @@ Checks: >
   -concurrency-mt-unsafe,
   -modernize-use-trailing-return-type,
   -modernize-pass-by-value,
+  -performance-enum-size,
   -readability-braces-around-statements,
   -readability-else-after-return,
   -readability-function-cognitive-complexity,
@@ -22,9 +23,9 @@ Checks: >
   -readability-redundant-member-init
 
 CheckOptions:
-  - { key: readability-identifier-naming.TypeAliasSuffix, value: "_t" }
-  - { key: readability-identifier-naming.TypeAliasCase, value: lower_case }
-  - { key: readability-identifier-naming.MemberPrefix, value: "m_" }
-  - { key: readability-identifier-naming.MemberCasing, value: lower_case }
-  - { key: readability-identifier-naming.ScopedEnumCase, value: lower_case }
+  #  - { key: readability-identifier-naming.TypeAliasSuffix, value: "_t" }
+  #  - { key: readability-identifier-naming.TypeAliasCase, value: lower_case }
+  #  - { key: readability-identifier-naming.MemberPrefix, value: "m_" }
+  #  - { key: readability-identifier-naming.MemberCasing, value: lower_case }
+  #  - { key: readability-identifier-naming.ScopedEnumCase, value: lower_case }
   - { key: performance-for-range-copy.WarnOnAllAutoCopies, value: true }
