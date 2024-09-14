@@ -1,6 +1,7 @@
 #include <coroutine>
 
 #include <asio.hpp>
+#include <deflux/protocol.hpp>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
