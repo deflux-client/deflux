@@ -14,8 +14,8 @@ public:
     {
     }
 
-    void on_message_received(
-        std::vector<uint8_t> raw_message, std::shared_ptr<deflux::net::tcp_connection> connection) override
+protected:
+    void on_message_received(std::vector<uint8_t> raw_message, std::shared_ptr<net::tcp_connection> connection) override
     {
         const std::string message{ raw_message.begin(), raw_message.end() };
         spdlog::debug("connection {}: {}", connection->id(), message);

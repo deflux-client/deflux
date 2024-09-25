@@ -32,6 +32,7 @@ public:
     void run();
     void stop();
 
+protected:
     /**
      * Called whenever a message is received from a remote connection
      *
@@ -49,7 +50,7 @@ public:
 
 private:
     std::unordered_map<tcp_connection::id_t, std::shared_ptr<tcp_connection>> m_connections{};
-    io_pool m_pool{};
+    io_pool m_pool = io_pool{ std::max<size_t>(std::thread::hardware_concurrency() / 2, 1) };
     asio::ip::tcp::acceptor m_acceptor;
     asio::signal_set m_set{ m_pool.get_executor() };
 
