@@ -1,6 +1,7 @@
 BasedOnStyle: WebKit
 AlignAfterOpenBracket: DontAlign
 AllowShortFunctionsOnASingleLine: Empty
+AlwaysBreakTemplateDeclarations: Yes
 BreakConstructorInitializers: BeforeColon
 ColumnLimit: 120
 EmptyLineBeforeAccessModifier: LogicalBlock
