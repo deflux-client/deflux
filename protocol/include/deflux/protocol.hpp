@@ -2,59 +2,11 @@
 #define PROTOCOL_HPP
 
 #include <cstdint>
-#include <nlohmann/json.hpp>
+#include <variant>
 
-#define DEFLUXD_JSON_TO(name) deflux::proto::detail::serialize(nlohmann_json_j, nlohmann_json_t.name, #name);
-#define DEFLUXD_JSON_FROM(name) deflux::proto::detail::deserialize(nlohmann_json_j, nlohmann_json_t.name, #name);
-#define DEFLUXD_SERIALIZABLE(Type, ...)                                                                                \
-    friend void to_json(nlohmann::json& nlohmann_json_j, const Type& nlohmann_json_t)                                  \
-    {                                                                                                                  \
-        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(DEFLUXD_JSON_TO, __VA_ARGS__))                                        \
-    }                                                                                                                  \
-    friend void from_json(const nlohmann::json& nlohmann_json_j, Type& nlohmann_json_t)                                \
-    {                                                                                                                  \
-        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(DEFLUXD_JSON_FROM, __VA_ARGS__))                                      \
-    }
+#include "serialize.hpp"
 
-namespace deflux::proto {
-
-// helper functions that avoid serializing `std::optional`s if they are `std::nullopt`
-// when using `NLOHMANN_DEFINE_TYPE_*`, the deserialization function throws if a key is absent from the json
-// (even if optional), and the serialization function inserts a key with null. If that's not the behaviour
-// you want, you have to write the functions manually, which i'd prefer not to.
-// `DEFLUXD_SERIALIZABLE` does the same thing as `NLOHMANN_DEFINE_TYPE_INTRUSIVE`, but without throwing or including
-// a null value
-namespace detail {
-
-    template <typename T>
-    void serialize(nlohmann::json& json, const T& to_serialize, const std::string& serialized_name)
-    {
-        json[serialized_name] = to_serialize;
-    }
-
-    template <typename T>
-    void serialize(nlohmann::json& json, const std::optional<T>& to_serialize, const std::string& serialized_name)
-    {
-        if (to_serialize)
-            json[serialized_name] = *to_serialize;
-    }
-
-    template <typename T>
-    void deserialize(const nlohmann::json& json, T& to_deserialize, const std::string& serialized_name)
-    {
-        to_deserialize = json.at(serialized_name);
-    }
-
-    template <typename T>
-    void deserialize(const nlohmann::json& json, std::optional<T>& to_deserialize, const std::string& serialized_name)
-    {
-        if (json.contains(serialized_name) && !json[serialized_name].is_null())
-            to_deserialize = json[serialized_name].get<T>();
-        else
-            to_deserialize = std::nullopt;
-    }
-
-}
+namespace deflux {
 
 enum class message_type : uint16_t {
     // types sent by the server
@@ -67,17 +19,108 @@ enum class message_type : uint16_t {
     ping
 };
 
-struct empty {
-    friend void to_json(nlohmann::json& /*j*/, const empty& /*e*/)
+enum class error_reason : uint16_t { invalid_request, no_such_method };
+
+struct empty_t {
+    friend void to_json(nlohmann::json& /*j*/, const empty_t& /*e*/)
     {
         // no-op
     }
 
-    friend void from_json(const nlohmann::json& /*j*/, empty& /*e*/)
+    friend void from_json(const nlohmann::json& /*j*/, empty_t& /*e*/)
     {
         // no-op
     }
 };
+
+template <Serializable T>
+    requires !std::same_as<T, error_reason>
+             struct message_t {
+    uint32_t tag;
+    message_type type;
+    std::variant<T, error_reason> data;
+
+    [[nodiscard]] bool is_ok() const
+    {
+        return std::holds_alternative<T>(data);
+    }
+
+    /**
+     * Convenience method for accessing the message data. Equivalent to `std::get<T>(message.data)`
+     *
+     * @throws std::bad_variant_access if `is_ok()` is false
+     * @return message data
+     */
+    [[nodiscard]] T& get_data()
+    {
+        return std::get<T>(data);
+    }
+
+    /**
+     * Convenience method for accessing the message's error reason. Equivalent to `std::get<error_reason>(message.data)`
+     *
+     * @throws std::bad_variant_access if `is_ok()` is true
+     * @return error reason
+     */
+    [[nodiscard]] error_reason& get_error()
+    {
+        return std::get<error_reason>(data);
+    }
+
+    [[nodiscard]] const T& get_data() const
+    {
+        return std::get<T>(data);
+    }
+
+    [[nodiscard]] const error_reason& get_error() const
+    {
+        return std::get<error_reason>(data);
+    }
+
+    friend void to_json(nlohmann::json& j, const message_t& m)
+    {
+        detail::serialize(j, m.tag, "tag");
+        detail::serialize(j, m.type, "type");
+
+        if (m.is_ok())
+            detail::serialize(j, m.get_data(), "data");
+        else
+            detail::serialize(j, m.get_error(), "data");
+    }
+
+    friend void from_json(const nlohmann::json& j, message_t& m)
+    {
+        detail::deserialize(j, m.tag, "tag");
+        detail::deserialize(j, m.type, "type");
+
+        if (m.is_ok())
+            m.data = j["data"].get<T>();
+        else
+            m.data = j["data"].get<error_reason>();
+    };
+};
+
+/**
+ * Type alias for a `message` that holds unparsed data (represented as a json object)
+ */
+using unparsed_message_t = message_t<nlohmann::json>;
+
+template <Serializable T>
+message_t<T> make_response(const T& data, uint32_t tag = 0)
+{
+    return { tag, message_type::success, data };
+}
+
+inline message_t<empty_t> make_response(const error_reason& error, uint32_t tag = 0)
+{
+    return { tag, message_type::failure, error };
+}
+
+template <Serializable T>
+message_t<T> make_request(const T& data, const message_type& method, uint32_t tag = 0)
+{
+    return { tag, method, data };
+}
 
 }
 
