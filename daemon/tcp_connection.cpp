@@ -21,7 +21,7 @@ asio::awaitable<void> tcp_connection::async_write(std::vector<uint8_t> message) 
     }
 }
 
-void tcp_connection::send(std::vector<uint8_t>& message)
+void tcp_connection::send(std::vector<uint8_t>&& message)
 {
     co_spawn(m_socket.get_executor(), async_write(std::move(message)), asio::detached);
 }

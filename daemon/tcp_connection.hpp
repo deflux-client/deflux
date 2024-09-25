@@ -37,7 +37,7 @@ public:
         const message_callback_t& message_callback, const close_callback_t& close_callback);
 
     void close();
-    void send(std::vector<uint8_t>& message);
+    void send(std::vector<uint8_t>&& message);
     [[nodiscard]] bool is_open() const;
     [[nodiscard]] id_t id() const;
     [[nodiscard]] asio::ip::tcp::endpoint remote_endpoint() const;
