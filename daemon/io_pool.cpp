@@ -29,7 +29,6 @@ void io_pool::stop() const
 {
     for (const auto& ctx : m_executors) {
         ctx->stop();
-        delete ctx;
     }
 }
 
@@ -51,8 +50,7 @@ void io_pool::instantiate_executors()
     assert(m_pool_size);
 
     for (auto i = 0; i < m_pool_size; i++) {
-        auto* ctx = new asio::io_context();
-        m_executors.push_back(ctx);
+        m_executors.push_back(std::make_unique<asio::io_context>());
     }
 }
 

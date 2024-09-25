@@ -44,7 +44,7 @@ public:
     /**
      * Starts the `io_pool` event loop.
      *
-     * @note Spawns `size()` - 1 threads, and uses the caller thread as executors.
+     * @note Spawns `size()` - 1 threads and uses the caller thread as executors.
      */
     void run() const;
 
@@ -66,7 +66,7 @@ private:
     size_t m_pool_size = std::max<size_t>(1, std::thread::hardware_concurrency());
     size_t m_current_executor = 0;
     // store as a pointer because the copy constructor of asio::io_context is deleted
-    std::vector<asio::io_context*> m_executors{};
+    std::vector<std::unique_ptr<asio::io_context>> m_executors{};
 
     void instantiate_executors();
 };
