@@ -19,21 +19,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "daemon.hpp"
+#ifndef DAEMON_HPP
+#define DAEMON_HPP
 
-#include <asio.hpp>
+#include <asio/thread_pool.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
+#include "tcp_connection.hpp"
 #include "tcp_server.hpp"
 
-int main()
-{
-    deflux::daemon daemon{};
+namespace deflux {
 
-    spdlog::info("starting daemon");
+class daemon : public net::tcp_server {
+public:
+    daemon()
+        : tcp_server(asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 2347))
+    {
+    }
 
-    daemon.run();
-    spdlog::shutdown();
+protected:
+    void on_message_received(
+        std::vector<uint8_t> raw_message, std::shared_ptr<net::tcp_connection> connection) override;
+    void on_connection_close(net::tcp_connection::id_t id) override;
 
-    return EXIT_SUCCESS;
+private:
+    asio::thread_pool m_thread_pool = { std::thread::hardware_concurrency() };
+
+    void shutdown();
+    nlohmann::json handle_client_request(const std::vector<uint8_t>& raw);
+};
+
 }
+
+#endif // DAEMON_HPP

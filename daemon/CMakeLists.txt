@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(defluxd
         main.cpp
+        daemon.hpp
+        daemon.cpp
         io_pool.hpp
         io_pool.cpp
         tcp_server.hpp
