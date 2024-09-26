@@ -1,0 +1,11 @@
+<component name="CopyrightManager">
+  <settings>
+    <module2copyright>
+      <element module="defluxd" copyright="GPL v3" />
+    </module2copyright>
+    <LanguageOptions name="C++">
+      <option name="fileTypeOverride" value="3" />
+    </LanguageOptions>
+    <LanguageOptions name="__TEMPLATE__" />
+  </settings>
+</component>

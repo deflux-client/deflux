@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="defluxd" pattern="file[deflux]:daemon/*||file[deflux]:protocol/*||file[deflux]:protocol/include//*" />
+</component>
